@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 	"time"
-	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -19,16 +19,18 @@ type HttpServer struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"4s"`
 }
 
-var cfgPath = "./config/config.yaml"
+var cfgPath = "./configs/config.yaml"
 
 func MustLoad() *Config{
-	if _, err := os.Stat(cfgPath); os.IsNotExist(err){
+	file, err := os.ReadFile(cfgPath)
+	if os.IsNotExist(err){
 		log.Fatalf("Config file not found: %s", cfgPath)
 	}
 	
 	var cfg *Config
-	if err := cleanenv.ReadConfig(cfgPath, &cfg); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+	if err = yaml.Unmarshal(file, &cfg); err != nil{
+		log.Fatalf("Failed to unmarshal config: %v", err)
 	}
+
 	return cfg
 }
