@@ -2,8 +2,8 @@ package sqlite
 
 import (
 	"database/sql"
-	"todo/internal/models"
 	_ "github.com/mattn/go-sqlite3"
+	"todo/internal/models"
 )
 
 type SQLite struct {
@@ -38,17 +38,17 @@ func (s *SQLite) GetTasks() ([]models.Task, error) {
 		SELECT id, name 
 		  FROM tasks
 	`)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	var res []models.Task 
+	var res []models.Task
 	rows, err := stmt.Query()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	for rows.Next(){
+	for rows.Next() {
 		var task models.Task
 		rows.Scan(&task.Id, &task.Name)
 		res = append(res, task)
@@ -57,27 +57,27 @@ func (s *SQLite) GetTasks() ([]models.Task, error) {
 	return res, nil
 }
 
-func (s *SQLite) AddTask(task models.Task) error{
+func (s *SQLite) AddTask(task models.Task) error {
 	stmt, err := s.db.Prepare(`INSERT INTO TASKS(id, name)
 	VALUES (?,?)`)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	if _, err := stmt.Exec(task.Id, task.Name); err != nil{
+	if _, err := stmt.Exec(task.Id, task.Name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *SQLite) RemoveTask(id int) error{
+func (s *SQLite) RemoveTask(id int) error {
 	stmt, err := s.db.Prepare(`DELETE FROM BOOKS WHERE id = ?`)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	if _, err := stmt.Exec(); err != nil{
+	if _, err := stmt.Exec(); err != nil {
 		return err
 	}
 
