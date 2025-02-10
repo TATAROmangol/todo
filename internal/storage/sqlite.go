@@ -2,8 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
+	"todo/models"
+
 	_ "github.com/mattn/go-sqlite3"
-	"todo/internal/models"
 )
 
 type SQLite struct {
@@ -58,8 +59,11 @@ func (s *SQLite) GetTasks() ([]models.Task, error) {
 }
 
 func (s *SQLite) AddTask(task models.Task) error {
-	stmt, err := s.db.Prepare(`INSERT INTO TASKS(id, name)
-	VALUES (?,?)`)
+	stmt, err := s.db.Prepare(`
+		INSERT INTO tasks(id, name)
+		VALUES (?,?)
+	`)
+
 	if err != nil {
 		return err
 	}
