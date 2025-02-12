@@ -2,7 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
-	"todo/models"
+	"todo/internal/entities"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,7 +19,7 @@ func New(path string) (*SQLite, error) {
 
 	stmt, err := db.Prepare(`
 		CREATE TABLE IF NOT EXISTS tasks(
-			id INTEGER PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT
 		)
 	`)
@@ -34,7 +34,7 @@ func New(path string) (*SQLite, error) {
 	return &SQLite{db}, nil
 }
 
-func (s *SQLite) GetTasks() ([]models.Task, error) {
+func (s *SQLite) GetTasks() ([]entities.Task, error) {
 	stmt, err := s.db.Prepare(`
 		SELECT id, name 
 		  FROM tasks
@@ -42,15 +42,16 @@ func (s *SQLite) GetTasks() ([]models.Task, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
-	var res []models.Task
+	var res []entities.Task
 	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
-		var task models.Task
+		var task entities.Task
 		rows.Scan(&task.Id, &task.Name)
 		res = append(res, task)
 	}
@@ -58,21 +59,28 @@ func (s *SQLite) GetTasks() ([]models.Task, error) {
 	return res, nil
 }
 
-func (s *SQLite) AddTask(task models.Task) error {
+func (s *SQLite) CreateTask(name string) (entities.Task, error) {
 	stmt, err := s.db.Prepare(`
-		INSERT INTO tasks(id, name)
-		VALUES (?,?)
+		INSERT INTO tasks(name)
+		VALUES (?)
 	`)
-
 	if err != nil {
-		return err
+		return entities.Task{}, err
 	}
+	defer stmt.Close()
 
-	if _, err := stmt.Exec(task.Id, task.Name); err != nil {
-		return err
-	}
+	if _, err := stmt.Exec(name); err != nil {
+        return entities.Task{}, err
+    }
 
-	return nil
+	var task entities.Task
+    row := s.db.QueryRow("SELECT LAST_INSERT_ROWID()")
+    if err := row.Scan(&task.Id); err != nil {
+        return entities.Task{}, err
+    }
+
+    task.Name = name
+    return task, nil
 }
 
 func (s *SQLite) RemoveTask(id int) error {
@@ -80,6 +88,7 @@ func (s *SQLite) RemoveTask(id int) error {
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	if _, err := stmt.Exec(); err != nil {
 		return err
