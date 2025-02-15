@@ -1,41 +1,21 @@
-package sqlite
+package task
 
 import (
 	"database/sql"
 	"todo/internal/entities"
-
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type SQLite struct {
+type Repository struct{
 	db *sql.DB
 }
 
-func New(path string) (*SQLite, error) {
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, err
-	}
-
-	stmt, err := db.Prepare(`
-		CREATE TABLE IF NOT EXISTS tasks(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT
-		)
-	`)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err = stmt.Exec(); err != nil {
-		return nil, err
-	}
-
-	return &SQLite{db}, nil
+func NewRepository(db *sql.DB) *Repository{
+	return &Repository{db}
 }
 
-func (s *SQLite) GetTasks() ([]entities.Task, error) {
-	stmt, err := s.db.Prepare(`
+func (r *Repository) GetTasks() ([]entities.Task, error) {
+	stmt, err := r.db.Prepare(`
 		SELECT id, name 
 		  FROM tasks
 	`)
@@ -59,8 +39,8 @@ func (s *SQLite) GetTasks() ([]entities.Task, error) {
 	return res, nil
 }
 
-func (s *SQLite) CreateTask(name string) (entities.Task, error) {
-	stmt, err := s.db.Prepare(`
+func (r *Repository) CreateTask(name string) (entities.Task, error) {
+	stmt, err := r.db.Prepare(`
 		INSERT INTO tasks(name)
 		VALUES (?)
 	`)
@@ -74,7 +54,7 @@ func (s *SQLite) CreateTask(name string) (entities.Task, error) {
     }
 
 	var task entities.Task
-    row := s.db.QueryRow("SELECT LAST_INSERT_ROWID()")
+    row := r.db.QueryRow("SELECT LAST_INSERT_ROWID()")
     if err := row.Scan(&task.Id); err != nil {
         return entities.Task{}, err
     }
@@ -83,8 +63,8 @@ func (s *SQLite) CreateTask(name string) (entities.Task, error) {
     return task, nil
 }
 
-func (s *SQLite) RemoveTask(id int) error {
-	stmt, err := s.db.Prepare(`DELETE FROM BOOKS WHERE id = ?`)
+func (r *Repository) RemoveTask(id int) error {
+	stmt, err := r.db.Prepare(`DELETE FROM BOOKS WHERE id = ?`)
 	if err != nil {
 		return err
 	}
