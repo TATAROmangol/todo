@@ -13,7 +13,7 @@ type Service interface {
 type Router struct {
 	ctx context.Context
 	cfg Config
-	srv http.Server
+	srv *http.Server
 }
 
 func New(ctx context.Context, cfg Config, cases Service) *Router {
@@ -24,7 +24,7 @@ func New(ctx context.Context, cfg Config, cases Service) *Router {
 	mux.HandleFunc("/remove", th.Remove)
 	mux.HandleFunc("/get", th.Get)
 
-	srv := http.Server{
+	srv := &http.Server{
 		Addr: cfg.Address,
 		Handler: mux,
 	}
