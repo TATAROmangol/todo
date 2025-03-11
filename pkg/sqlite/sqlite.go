@@ -6,8 +6,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func New(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path)
+func New(cfg Config) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", cfg.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -28,4 +28,3 @@ func New(path string) (*sql.DB, error) {
 
 	return db, nil
 }
-

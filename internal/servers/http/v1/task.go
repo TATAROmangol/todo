@@ -1,24 +1,36 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"todo/internal/entities"
 )
 
-type TaskHandler struct{
-	service Service
+type TaskService interface {
+	GetTasks() ([]entities.Task, error)
+	CreateTask(name string) (entities.Task, error)
+	RemoveTask(id int) error
 }
 
-func NewTaskHandler(service Service) *TaskHandler{
-	return &TaskHandler{service}
+type TaskHandler struct {
+	ctx context.Context
+	ts  TaskService
 }
 
-type CreateReq struct{
+func NewTaskHandler(ctx context.Context, ts TaskService) *TaskHandler {
+	return &TaskHandler{ctx, ts}
+}
+
+type CreateReq struct {
 	Name string `json:"name"`
 }
 
-func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request){
+func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST"{
+		WriteError(w, nil, http.StatusMethodNotAllowed)
+	}
+
 	var req CreateReq
 	err := json.NewDecoder(r.Body).Decode(&req)
 	defer r.Body.Close()
@@ -27,7 +39,7 @@ func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	task, err := th.service.CreateTask(req.Name)
+	task, err := th.ts.CreateTask(req.Name)
 	if err != nil {
 		WriteError(w, err, 404)
 		return
@@ -40,30 +52,38 @@ func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func (th *TaskHandler) Remove(w http.ResponseWriter, r *http.Request){
+func (th *TaskHandler) Remove(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE"{
+		WriteError(w, nil, http.StatusMethodNotAllowed)
+	}
+
 	var task entities.Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
-			WriteError(w, err, 404)
-			return
-		}
-		defer r.Body.Close()
+		WriteError(w, err, 404)
+		return
+	}
+	defer r.Body.Close()
 
-		if err := th.service.RemoveTask(task.Id); err != nil {
-			WriteError(w, err, 404)
-			return
-		}
+	if err := th.ts.RemoveTask(task.Id); err != nil {
+		WriteError(w, err, 404)
+		return
+	}
 }
 
-func (th *TaskHandler) Get(w http.ResponseWriter, r *http.Request){
-	tasks, err := th.service.GetTasks()
-		if err != nil {
-			WriteError(w, err, 404)
-			return
-		}
+func (th *TaskHandler) Get(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET"{
+		WriteError(w, nil, http.StatusMethodNotAllowed)
+	}
 
-		err = json.NewEncoder(w).Encode(tasks)
-		if err != nil {
-			WriteError(w, err, 404)
-			return
-		}
+	tasks, err := th.ts.GetTasks()
+	if err != nil {
+		WriteError(w, err, 404)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(tasks)
+	if err != nil {
+		WriteError(w, err, 404)
+		return
+	}
 }

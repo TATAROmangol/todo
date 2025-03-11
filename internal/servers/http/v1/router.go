@@ -1,32 +1,47 @@
 package v1
 
 import (
-	"log/slog"
+	"context"
 	"net/http"
-	"todo/internal/entities"
+	"todo/internal/logger"
 )
 
-type Service interface{
-	GetTasks() ([]entities.Task, error)
-	CreateTask(name string) (entities.Task, error)
-	RemoveTask(id int) error
+type Service interface {
+	TaskService
 }
 
-type Router struct{
-	log *slog.Logger
-	mux *http.ServeMux
+type Router struct {
+	ctx context.Context
+	cfg Config
+	srv http.Server
 }
 
-func New(log *slog.Logger, service Service) *Router{
-	th := NewTaskHandler(service)
-	mux := *http.NewServeMux()
+func New(ctx context.Context, cfg Config, cases Service) *Router {
+	th := NewTaskHandler(ctx, cases)
+
+	mux := http.NewServeMux()
 	mux.HandleFunc("/create", th.Create)
 	mux.HandleFunc("/remove", th.Remove)
 	mux.HandleFunc("/get", th.Get)
-	return &Router{log, &mux}
+
+	srv := http.Server{
+		Addr: cfg.Address,
+		Handler: mux,
+	}
+	return &Router{ctx, cfg, srv}
 }
 
-func (r *Router) Run(path string){
-	r.log.Info("Run server", slog.String("path", path))
-	http.ListenAndServe(path, r.mux)
+func (r *Router) Run() error{
+	logger.GetFromCtx(r.ctx).Info("Run server", "path", r.cfg.Address)
+	if err := r.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed{
+		return err
+	}
+	return nil
+}
+
+func (r *Router) Shutdown(ctx context.Context) error{
+	if err := r.srv.Shutdown(ctx); err != nil{
+		return err
+	}
+	return nil
 }

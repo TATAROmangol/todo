@@ -1,36 +1,36 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
+	"fmt"
 	"log"
 	"os"
-	"time"
+	v1 "todo/internal/servers/http/v1"
+	"todo/pkg/sqlite"
 )
 
 type Config struct {
-	Env         string `yaml:"env" env-default:"local"`
-	StoragePath string `yaml:"storage_path" env-required:"true"`
-	HttpServer  `yaml:"http_server"`
+	HttpConfig v1.Config
+	RepoConfig sqlite.Config
 }
 
-type HttpServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8080""`
-	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"4s"`
-}
+func MustLoad() Config {
+	httpPort, exist := os.LookupEnv("HTTP_PORT")
+	if !exist {
+		log.Fatal("no found env HTTP_PORT")
+	}
+	httpAddress := fmt.Sprintf("localhost:%v", httpPort)
 
-var cfgPath = "./configs/config.yaml"
-
-func MustLoad() *Config {
-	file, err := os.ReadFile(cfgPath)
-	if os.IsNotExist(err) {
-		log.Fatalf("Config file not found: %s", cfgPath)
+	repoPath, exist := os.LookupEnv("STORAGE_PATH")
+	if !exist {
+		log.Fatal("no found env HTTP_PORT")
 	}
 
-	var cfg *Config
-	if err = yaml.Unmarshal(file, &cfg); err != nil {
-		log.Fatalf("Failed to unmarshal config: %v", err)
+	return Config{
+		HttpConfig: v1.Config{
+			Address: httpAddress,
+		},
+		RepoConfig: sqlite.Config{
+			Path: repoPath,
+		},
 	}
-
-	return cfg
 }
