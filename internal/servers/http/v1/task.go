@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"todo/internal/entities"
 )
@@ -24,6 +25,14 @@ func NewTaskHandler(ctx context.Context, ts TaskService) *TaskHandler {
 
 type CreateReq struct {
 	Name string `json:"name"`
+}
+
+func (th *TaskHandler) Hello(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET"{
+		WriteError(w, nil, http.StatusMethodNotAllowed)
+	}
+
+	io.WriteString(w, "Hello docker!")
 }
 
 func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {

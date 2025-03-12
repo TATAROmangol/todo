@@ -41,9 +41,9 @@ func MustLoadConfig() Config {
 		log.Fatal("no found env POSTGRES_PASSWORD")
 	}
 
-	dbName, exist := os.LookupEnv("POSTGRES_DBNAME")
+	dbName, exist := os.LookupEnv("POSTGRES_DB")
 	if !exist {
-		log.Fatal("no found env POSTGRES_DBNAME")
+		log.Fatal("no found env POSTGRES_DB")
 	}
 
 	ssl, exist := os.LookupEnv("POSTGRES_SSL")

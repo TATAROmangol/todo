@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	// "log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,14 +14,14 @@ import (
 	"todo/internal/services"
 	"todo/pkg/postgres"
 
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil{
-		log.Fatal("failed to load env")
-	}
+	// err := godotenv.Load()
+	// if err != nil{
+	// 	log.Fatal("failed to load env")
+	// }
 
 	cfg := config.MustLoad()
 

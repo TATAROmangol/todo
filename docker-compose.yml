@@ -1,16 +1,32 @@
-version: '3.9'
-
 services:
+  todo:
+    container_name: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build: 
+      dockerfile: Dockerfile
+    environment:
+      HTTP_PORT: 8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: postgres_db
+      POSTGRES_SSL: disable
+    ports:
+      - 80:8080
+    
   postgres:
     image: postgres:latest
-    container_name: postgres_todo_container
+    container_name: postgres
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: postgres_db
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5430:5432"
+      - 5430:5432
     volumes:
       - ./pgdata:/var/lib/postgresql/data/pgdata
     deploy:
@@ -30,24 +46,13 @@ services:
                -c wal_buffers=16MB
                -c default_statistics_target=100
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U POSTGRES_USER -d POSTGRES_DB" ]
       interval: 30s
       timeout: 10s
       retries: 5
     restart: unless-stopped
     tty: true
     stdin_open: true
-  # todo:
-  #   image:
-  #   container_name: todo_main_container
-  #   environment:
-  #     HTTP_PORT="8080"
-  #     POSTGRES_HOST="localhost"
-  #     POSTGRES_PORT="5430"
-  #     POSTGRES_USER="admin"
-  #     POSTGRES_PASSWORD=12345
-  #     POSTGRES_DBNAME="postgres_db"
-  #     POSTGRES_SSL="disable"
 
 volumes:
   pgdata:

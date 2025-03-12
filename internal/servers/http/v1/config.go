@@ -15,7 +15,7 @@ func MustLoadConfig() Config {
 	if !exist {
 		log.Fatal("no found env HTTP_PORT")
 	}
-	httpAddress := fmt.Sprintf("localhost:%v", httpPort)
+	httpAddress := fmt.Sprintf(":%v", httpPort)
 
 	return Config{
 		Address: httpAddress,
