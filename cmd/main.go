@@ -12,7 +12,7 @@ import (
 	"todo/internal/repository"
 	v1 "todo/internal/servers/http/v1"
 	"todo/internal/services"
-	"todo/pkg/sqlite"
+	"todo/pkg/postgres"
 
 	"github.com/joho/godotenv"
 )
@@ -28,14 +28,14 @@ func main() {
 	ctx := context.Background()
 	ctx = logger.ImportInContext(ctx)
 
-	sqlite, err := sqlite.New(cfg.RepoConfig)
+	pq, err := postgres.NewDB(cfg.RepoConfig)
 	if err != nil {
 		logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in initialize storage", "error", err.Error())
 		os.Exit(1)
 	}
 	logger.GetFromCtx(ctx).Info("database loaded")
 
-	taskRepo := repository.NewRepository(ctx, sqlite)
+	taskRepo := repository.NewRepository(ctx, pq)
 	taskService := service.NewService(ctx, taskRepo)
 
 	router := v1.New(ctx, cfg.HttpConfig, taskService)

@@ -1,36 +1,21 @@
 package config
 
 import (
-	"fmt"
-	"log"
-	"os"
 	v1 "todo/internal/servers/http/v1"
-	"todo/pkg/sqlite"
+	"todo/pkg/postgres"
 )
 
 type Config struct {
 	HttpConfig v1.Config
-	RepoConfig sqlite.Config
+	RepoConfig postgres.Config
 }
 
 func MustLoad() Config {
-	httpPort, exist := os.LookupEnv("HTTP_PORT")
-	if !exist {
-		log.Fatal("no found env HTTP_PORT")
-	}
-	httpAddress := fmt.Sprintf("localhost:%v", httpPort)
-
-	repoPath, exist := os.LookupEnv("STORAGE_PATH")
-	if !exist {
-		log.Fatal("no found env HTTP_PORT")
-	}
+	httpConfig := v1.MustLoadConfig()
+	repoConfig := postgres.MustLoadConfig()
 
 	return Config{
-		HttpConfig: v1.Config{
-			Address: httpAddress,
-		},
-		RepoConfig: sqlite.Config{
-			Path: repoPath,
-		},
+		HttpConfig: httpConfig,
+		RepoConfig: repoConfig,
 	}
 }
