@@ -3,7 +3,6 @@ package v1
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"todo/internal/entities"
 )
@@ -27,16 +26,8 @@ type CreateReq struct {
 	Name string `json:"name"`
 }
 
-func (th *TaskHandler) Hello(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET"{
-		WriteError(w, nil, http.StatusMethodNotAllowed)
-	}
-
-	io.WriteString(w, "Hello docker!")
-}
-
-func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST"{
+func (th *TaskHandler) Post(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
 		WriteError(w, nil, http.StatusMethodNotAllowed)
 	}
 
@@ -62,7 +53,7 @@ func (th *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (th *TaskHandler) Remove(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE"{
+	if r.Method != "DELETE" {
 		WriteError(w, nil, http.StatusMethodNotAllowed)
 	}
 
@@ -80,7 +71,7 @@ func (th *TaskHandler) Remove(w http.ResponseWriter, r *http.Request) {
 }
 
 func (th *TaskHandler) Get(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET"{
+	if r.Method != "GET" {
 		WriteError(w, nil, http.StatusMethodNotAllowed)
 	}
 

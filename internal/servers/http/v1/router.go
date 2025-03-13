@@ -20,9 +20,8 @@ func New(ctx context.Context, cfg Config, cases Service) *Router {
 	th := NewTaskHandler(ctx, cases)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", th.Hello)
-	mux.HandleFunc("/create", th.Create)
-	mux.HandleFunc("/remove", th.Remove)
+	mux.HandleFunc("/post", th.Post)
+	mux.HandleFunc("/delete", th.Remove)
 	mux.HandleFunc("/get", th.Get)
 
 	srv := &http.Server{

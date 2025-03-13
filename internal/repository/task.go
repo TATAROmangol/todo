@@ -45,35 +45,29 @@ func (r *Repository) Get() ([]entities.Task, error) {
 func (r *Repository) Create(name string) (entities.Task, error) {
 	stmt, err := r.db.Prepare(`
 		INSERT INTO tasks(name)
-		VALUES (?)
+		VALUES ($1) RETURNING id
 	`)
 	if err != nil {
 		return entities.Task{}, err
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(name); err != nil {
+	var id int
+    if err := stmt.QueryRow(name).Scan(&id); err != nil {
         return entities.Task{}, err
     }
 
-	var task entities.Task
-    row := r.db.QueryRow("SELECT LAST_INSERT_ROWID()")
-    if err := row.Scan(&task.Id); err != nil {
-        return entities.Task{}, err
-    }
-
-    task.Name = name
-    return task, nil
+    return entities.Task{Id: id, Name: name}, nil
 }
 
 func (r *Repository) Remove(id int) error {
-	stmt, err := r.db.Prepare(`DELETE FROM BOOKS WHERE id = ?`)
+	stmt, err := r.db.Prepare(`DELETE FROM tasks WHERE id = $1`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(); err != nil {
+	if _, err := stmt.Exec(id); err != nil {
 		return err
 	}
 

@@ -13,5 +13,6 @@ func NewDB(cfg Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect from postgresql: %v", err)
 	}
+
 	return db, nil
 }

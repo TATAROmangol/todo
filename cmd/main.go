@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	// "log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 	"todo/internal/config"
 	"todo/internal/logger"
+	"todo/internal/migrator"
 	"todo/internal/repository"
 	v1 "todo/internal/servers/http/v1"
 	"todo/internal/services"
@@ -18,11 +18,7 @@ import (
 )
 
 func main() {
-	// err := godotenv.Load()
-	// if err != nil{
-	// 	log.Fatal("failed to load env")
-	// }
-
+	// godotenv.Load()
 	cfg := config.MustLoad()
 
 	ctx := context.Background()
@@ -35,6 +31,17 @@ func main() {
 	}
 	logger.GetFromCtx(ctx).Info("database loaded")
 
+	m, err := migrator.New(cfg.RepoConfig)
+	if err != nil{
+		logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in create migrator", "error", err.Error())
+		os.Exit(1)
+	}
+
+	if err := m.Up(); err != nil{
+		logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in up migrate", "error", err.Error())
+		os.Exit(1)
+	}
+
 	taskRepo := repository.NewRepository(ctx, pq)
 	taskService := service.NewService(ctx, taskRepo)
 
@@ -43,6 +50,7 @@ func main() {
 	go func(){
 		if err := router.Run(); err != nil{
 			logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in server", "error", err.Error())
+			os.Exit(1)
 		}
 	}()
 
@@ -58,4 +66,6 @@ func main() {
 	
 	router.Shutdown(closeCtx)
 	logger.GetFromCtx(ctx).Info("server stop")
+
+	pq.Close()
 }
