@@ -2,8 +2,10 @@ FROM golang:1.24
 
 WORKDIR /todo
 
-COPY . ./
+COPY go.mod go.sum ./
 RUN go mod download
+
+COPY . ./
 
 RUN make build 
 

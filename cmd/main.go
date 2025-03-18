@@ -7,14 +7,18 @@ import (
 	"syscall"
 	"time"
 	"todo/internal/config"
-	"todo/internal/logger"
-	"todo/internal/migrator"
+	"todo/pkg/logger"
+	"todo/pkg/migrator"
 	"todo/internal/repository"
 	v1 "todo/internal/servers/http/v1"
 	"todo/internal/services"
 	"todo/pkg/postgres"
 
 	// "github.com/joho/godotenv"
+)
+
+const (
+	migrationPath = "file://internal/repository/migrations"
 )
 
 func main() {
@@ -31,16 +35,18 @@ func main() {
 	}
 	logger.GetFromCtx(ctx).Info("database loaded")
 
-	m, err := migrator.New(cfg.RepoConfig)
+	m, err := migrator.New(migrationPath, cfg.RepoConfig)
 	if err != nil{
 		logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in create migrator", "error", err.Error())
 		os.Exit(1)
 	}
+	logger.GetFromCtx(ctx).Info("migrator loaded")
 
 	if err := m.Up(); err != nil{
 		logger.GetFromCtx(ctx).ErrorContext(ctx, "failed in up migrate", "error", err.Error())
 		os.Exit(1)
 	}
+	logger.GetFromCtx(ctx).Info("migrations complete")
 
 	taskRepo := repository.NewRepository(ctx, pq)
 	taskService := service.NewService(ctx, taskRepo)

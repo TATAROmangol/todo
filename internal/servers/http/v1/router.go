@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
-	"todo/internal/logger"
+	"todo/pkg/logger"
 )
 
 type Service interface {
