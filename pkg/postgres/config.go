@@ -52,7 +52,7 @@ func MustLoadConfig() Config {
 	}
 
 	return Config{
-		Host:     host,
+		Host: host,
 		Port:     port,
 		User:     user,
 		Password: password,

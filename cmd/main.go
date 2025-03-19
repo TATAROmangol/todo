@@ -13,8 +13,6 @@ import (
 	v1 "todo/internal/servers/http/v1"
 	"todo/internal/services"
 	"todo/pkg/postgres"
-
-	// "github.com/joho/godotenv"
 )
 
 const (
@@ -22,7 +20,6 @@ const (
 )
 
 func main() {
-	// godotenv.Load()
 	cfg := config.MustLoad()
 
 	ctx := context.Background()
