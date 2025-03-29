@@ -6,18 +6,21 @@ import (
 	"os"
 )
 
-const(
-	Key = "logger"
-)
-
-func ImportInContext(ctx context.Context) context.Context{
-	log := slog.New(
-		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-	)
-
-	return context.WithValue(ctx, Key, log)
+type Logger struct{
+	log *slog.Logger
 }
 
-func GetFromCtx(ctx context.Context) *slog.Logger{
-	return ctx.Value(Key).(*slog.Logger)
+func New() *Logger{
+	log := slog.New(
+		&ContextHandler{slog.NewJSONHandler(os.Stdout, nil)},
+	)
+	return &Logger{log}
+}
+
+func (l Logger) InfoContext(ctx context.Context, msg string, args ...any){
+	l.log.InfoContext(ctx, msg, args...)
+}
+
+func (l Logger) ErrorContext(ctx context.Context, msg string, args ...any){
+	l.log.InfoContext(ctx, msg, args...)
 }

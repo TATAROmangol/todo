@@ -1,13 +1,13 @@
 package config
 
 import (
-	v1 "todo/internal/servers/http/v1"
+	v1 "todo/internal/transport/http/v1"
 	"todo/pkg/postgres"
 )
 
 type Config struct {
-	HttpConfig v1.Config
-	RepoConfig postgres.Config
+	Http v1.Config
+	Repo postgres.Config
 }
 
 func MustLoad() Config {
@@ -15,7 +15,7 @@ func MustLoad() Config {
 	repoConfig := postgres.MustLoadConfig()
 
 	return Config{
-		HttpConfig: httpConfig,
-		RepoConfig: repoConfig,
+		Http: httpConfig,
+		Repo: repoConfig,
 	}
 }
